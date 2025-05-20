@@ -69,6 +69,7 @@ struct ConView: View {
                                     }
                                 }) {
                                     Text("Далее")
+                                        .customTextStyle(.h3Button)
                                         .foregroundColor(Color("MainGreen"))
                                         .padding()
                                 }
@@ -80,6 +81,7 @@ struct ConView: View {
                                     }
                                 }) {
                                     Text("Начать")
+                                        .customTextStyle(.h3Button)
                                         .foregroundColor(Color("MainGreen"))
                                         .padding()
                                 }
@@ -106,7 +108,7 @@ struct ConView: View {
                 
                 VStack(spacing: 16) {
                     Text(pages[0].title)
-                        .font(.system(size: 24, weight: .bold))
+                        .customTextStyle(.h1)
                         .foregroundColor(Color("MainGreen"))
                         .multilineTextAlignment(.leading)
                     
@@ -132,7 +134,7 @@ struct ConView: View {
                 
                 VStack(spacing: 16) {
                     Text(pages[1].title)
-                        .font(.system(size: 24, weight: .bold))
+                        .customTextStyle(.h1)
                         .foregroundColor(Color("MainGreen"))
                         .multilineTextAlignment(.leading)
                     
@@ -158,7 +160,7 @@ struct ConView: View {
                 
                 VStack(spacing: 16) {
                     Text(pages[2].title)
-                        .font(.system(size: 24, weight: .bold))
+                        .customTextStyle(.h1)
                     .foregroundColor(Color("MainGreen"))
                     .multilineTextAlignment(.leading)
                 

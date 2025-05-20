@@ -7,21 +7,70 @@
 
 import SwiftUI
 
+enum TextStyle {
+    case h1
+    case h2
+    case h3
+    case h3Button
+    case h4
+    case text
+
+    var fontName: String {
+        switch self {
+        case .text, .h3:
+            return "FormaDJRCyrillicText-Regular"
+        default:
+            return "FormaDJRCyrillicText-Medium"
+        }
+    }
+
+    var size: CGFloat {
+        switch self {
+        case .h1: return 24
+        case .h2: return 20
+        case .h3Button, .h3: return 18
+        case .h4, .text: return 15
+        }
+    }
+
+    var letterSpacing: CGFloat {
+        switch self {
+        case .h1: return 0.72
+        case .h2: return 0.6
+        case .h3Button, .h3: return 0.48
+        case .h4, .text: return 0.36
+        }
+    }
+
+    var lineHeight: CGFloat? {
+        switch self {
+        case .h1: return 26.4
+        case .h2: return 22.0
+        case .h4, .text: return 13.2
+        default: return nil
+        }
+    }
+
+    
+    
+}
+
 struct CustomTextStyle: ViewModifier {
-    var size: CGFloat
-    var weight: Font.Weight
+    let style: TextStyle
 
     func body(content: Content) -> some View {
-        content
-            .font(.system(size: size, weight: weight, design: .default))
+        var text = content
+            .font(.custom(style.fontName, size: style.size))
+            .tracking(style.letterSpacing)
+
+       
+
+        return text
     }
 }
 
 extension View {
-    func headingTextStyle(size: CGFloat = 48, weight: Font.Weight = .bold) -> some View {
-        self.modifier(CustomTextStyle(size: size, weight: weight))
-    }
-    func buttonTextStyle(size: CGFloat = 16, weight: Font.Weight = .bold) -> some View {
-        self.modifier(CustomTextStyle(size: size, weight: weight))
+    func customTextStyle(_ style: TextStyle) -> some View {
+        self.modifier(CustomTextStyle(style: style))
     }
 }
