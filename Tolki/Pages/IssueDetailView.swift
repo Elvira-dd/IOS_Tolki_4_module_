@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftUI
 
 struct IssueDetailView: View {
-    var issue: Issue
+    @State var issue: Issue
     @State private var issues: [Issue] = []
     @State private var commentContent: String = ""
     @State private var selection: Int = 0
@@ -27,13 +27,13 @@ struct IssueDetailView: View {
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(width: .infinity)
+                        .frame(maxWidth: .infinity)
                         .clipped()
                         .cornerRadius(12)
                 } placeholder: {
                     ProgressView()
                 }
-                Text(issue.createdAt)
+                Text(issue.createdAt ?? "Дата неизвестна")
                     .font(.system(size: 16, weight: .regular))
                     .foregroundColor(Color("MainLight"))
                     .multilineTextAlignment(.leading)
@@ -151,7 +151,7 @@ struct IssueDetailView: View {
                 Image("pay_us_pls")
                     .resizable()  // Делаем изображение масштабируемым
                     .scaledToFit()  // Подгоняем изображение по размеру контейнера
-                    .frame(width: .infinity)  // Устанавливаем размеры
+                    .frame(maxWidth: .infinity)  // Устанавливаем размеры
                     .padding(.top, 70.0)
                 
                 
@@ -179,26 +179,29 @@ struct IssueDetailView: View {
                 Button(action: {
                     let keychain = KeychainService()
                     let token = keychain.getString(forKey: ViewModel.Const.tokenKey) ?? ""
-                    
-                    print("Полный токен для проверки: \(token)") // Временно для отладки
-                    
+
                     guard !token.isEmpty else {
-                        print("Ошибка: Токен пустой")
+                        print("❌ Ошибка: Токен пустой")
                         return
                     }
-                    
-                    // Проверяем структуру токена
-                    let tokenParts = token.components(separatedBy: ".")
-                    if tokenParts.count != 3 {
-                        print(" Неправильный формат JWT токена. Ожидается 3 части, получено \(tokenParts.count)")
-                    }
-                    
+
                     CommentService.shared.createComment(issueId: issue.id, content: commentContent, authToken: token) { success in
                         if success {
-                            print(" Комментарий добавлен на сервер")
-                            commentContent = ""
+                            DispatchQueue.main.async {
+                                commentContent = ""
+                            }
+                            IssueService.shared.fetchIssue(id: issue.id) { updatedIssue in
+                                if let updatedIssue = updatedIssue {
+                                    print("🔁 Новый issue содержит \(updatedIssue.comments.count) комментариев")
+                                    DispatchQueue.main.async {
+                                        self.issue = updatedIssue
+                                    }
+                                } else {
+                                    print("⚠️ Не удалось получить обновлённый issue")
+                                }
+                            }
                         } else {
-                            print(" Ошибка сервера при добавлении комментария")
+                            print("❌ Комментарий не создан — fetchIssue не вызывается")
                         }
                     }
                 }) {

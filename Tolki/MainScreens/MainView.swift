@@ -7,7 +7,7 @@ struct MainView: View {
     let menuItems = ["ВСЕ", "НОВОЕ", "ЧАРТЫ", "ПОДБОРКИ"]
     
     @State private var podcasts: [Podcast] = [] // Это твои подкасты, полученные с сервера
-    
+    @State private var issues: [Issue] = []
     // Вытаскиваем только подкасты с id 4, 5, 6, 7
     var newweekpodcasts: [Podcast] {
         podcasts.filter { [4, 5, 6, 7].contains($0.id) }
@@ -19,6 +19,9 @@ struct MainView: View {
     
     var newissue: Podcast? {
         podcasts.first { $0.id == 30 }  // Получаем подкаст с id 30
+    }
+    var chartissues: [Issue] {
+        issues.filter { [9, 16, 7].contains($0.id) }
     }
     
     var body: some View {
@@ -32,7 +35,7 @@ struct MainView: View {
                         .padding(.top, 70.0)
                     
                     Text("Что конкретно вы ищите?")
-                        .font(.system(size: 16, weight: .regular))
+                        .customTextStyle(.h4)
                         .foregroundColor(Color(.mainLight))
                         .multilineTextAlignment(.center)
                         .padding(.top, 20.0)
@@ -41,7 +44,7 @@ struct MainView: View {
                     // Поле поиска (заглушка)
                     HStack {
                         Text("Пост")
-                            .font(.system(size: 14, weight: .medium))
+                            .customTextStyle(.text)
                             .foregroundColor(Color(.mainLight))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 16)
@@ -49,7 +52,7 @@ struct MainView: View {
                             .background(Color(.mainLight4))
                             .cornerRadius(6)
                         Text("Подкаст")
-                            .font(.system(size: 14, weight: .medium))
+                            .customTextStyle(.text)
                             .foregroundColor(Color(.mainLight))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 16)
@@ -57,7 +60,7 @@ struct MainView: View {
                             .background(Color(.mainLight4))
                             .cornerRadius(6)
                         Text("Выпуск")
-                            .font(.system(size: 14, weight: .medium))
+                            .customTextStyle(.text)
                             .foregroundColor(Color(.mainLight))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 16)
@@ -65,7 +68,7 @@ struct MainView: View {
                             .background(Color(.mainLight4))
                             .cornerRadius(6)
                         Text("Автор")
-                            .font(.system(size: 14, weight: .medium))
+                            .customTextStyle(.text)
                             .foregroundColor(Color(.mainLight))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 16)
@@ -86,7 +89,7 @@ struct MainView: View {
                             // Пункты меню
                             ForEach(0..<menuItems.count, id: \.self) { index in
                                 Text(menuItems[index])
-                                    .font(.system(size: 14, weight: .medium))
+                                    .customTextStyle(.h4)
                                     .foregroundColor(self.selection == index ? Color("MainGreen") : .gray)
                                     .padding()
                                     .onTapGesture {
@@ -108,7 +111,7 @@ struct MainView: View {
                     // Новые подкасты этой недели
                     VStack(alignment: .leading) {
                         Text("Новые подкасты этой недели")
-                            .font(.system(size: 24, weight: .bold))
+                            .customTextStyle(.h1)
                             .foregroundColor(Color(.mainLight))
                             .multilineTextAlignment(.leading)
                             .padding(.trailing, 100.0)
@@ -120,43 +123,7 @@ struct MainView: View {
                             GridItem(.flexible(), spacing: 16)
                         ], spacing: 16) {
                             ForEach(newweekpodcasts) { podcast in
-                                NavigationLink(destination: PodcastDetailView(podcast: podcast)) {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        AsyncImage(url: URL(string: podcast.coverURL)) { image in
-                                            image
-                                                .resizable()
-                                                .scaledToFill()  // Растягивает изображение по ширине
-                                                .frame(height: 170)  // Фиксированная высота для изображения
-                                                .clipped()  // Обрезает, если изображение выходит за пределы
-                                        } placeholder: {
-                                            ProgressView()
-                                        }
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))  // Закругление углов
-                                        
-                                        Text(podcast.name)
-                                            .font(.system(size: 16, weight: .bold))  // Жирный текст
-                                            .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                            .lineLimit(1)  // Ограничивает количество строк в случае длинного текста
-                                            .padding(.top, 8)  // Отступ между картинкой и текстом
-                                        Text(podcast.description)
-                                            .font(.system(size: 12, weight: .regular))  // Жирный текст
-                                            .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                            .lineLimit(3)  // Ограничивает количество строк в случае длинного текста
-                                            .padding(.top, -5)  // Отступ между картинкой и текстом
-                                        HStack(alignment: .center) {
-                                            Image("persons_icon")
-                                                .resizable()  // Делаем изображение масштабируемым
-                                                .scaledToFit()  // Подгоняем изображение по размеру контейнера
-                                                .frame(width: 20, height: 20)  // Устанавливаем размеры
-                                            Text("1567 слушателей")
-                                                .font(.system(size: 12, weight: .regular))  // Жирный текст
-                                                .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                                .lineLimit(3)  // Ограничивает количество строк в случае длинного текста
-                                                .padding(.top, -5)  // Отступ между картинкой и текстом
-                                        }
-                                    }
-                                    .frame(height: 250)
-                                }
+                                PodcastCardView(podcast: podcast)
                             }
                         }
                         .padding([.leading, .trailing], 0)  // Убираем отступы по горизонтали у LazyVGrid
@@ -166,7 +133,7 @@ struct MainView: View {
                     // Подборки
                     VStack(alignment: .leading) {
                         Text("Подборки")
-                            .font(.system(size: 24, weight: .bold))
+                            .customTextStyle(.h1)
                             .foregroundColor(Color(.mainLight))
                             .multilineTextAlignment(.leading)
                             .padding(.trailing, 100.0)
@@ -178,43 +145,7 @@ struct MainView: View {
                             GridItem(.flexible(), spacing: 16)
                         ], spacing: 16) {
                             ForEach(podborki) { podcast in
-                                NavigationLink(destination: PodcastDetailView(podcast: podcast)) {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        AsyncImage(url: URL(string: podcast.coverURL)) { image in
-                                            image
-                                                .resizable()
-                                                .scaledToFill()  // Растягивает изображение по ширине
-                                                .frame(height: 170)  // Фиксированная высота для изображения
-                                                .clipped()  // Обрезает, если изображение выходит за пределы
-                                        } placeholder: {
-                                            ProgressView()
-                                        }
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))  // Закругление углов
-                                        
-                                        Text(podcast.name)
-                                            .font(.system(size: 16, weight: .bold))  // Жирный текст
-                                            .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                            .lineLimit(1)  // Ограничивает количество строк в случае длинного текста
-                                            .padding(.top, 8)  // Отступ между картинкой и текстом
-                                        Text(podcast.description)
-                                            .font(.system(size: 12, weight: .regular))  // Жирный текст
-                                            .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                            .lineLimit(3)  // Ограничивает количество строк в случае длинного текста
-                                            .padding(.top, -5)  // Отступ между картинкой и текстом
-                                        HStack(alignment: .center) {
-                                            Image("persons_icon")
-                                                .resizable()  // Делаем изображение масштабируемым
-                                                .scaledToFit()  // Подгоняем изображение по размеру контейнера
-                                                .frame(width: 20, height: 20)  // Устанавливаем размеры
-                                            Text("1567 слушателей")
-                                                .font(.system(size: 12, weight: .regular))  // Жирный текст
-                                                .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                                .lineLimit(3)  // Ограничивает количество строк в случае длинного текста
-                                                .padding(.top, -5)  // Отступ между картинкой и текстом
-                                        }
-                                    }
-                                    .frame(height: 250)
-                                }
+                                PodcastCardView(podcast: podcast)
                             }
                         }
                         .padding([.leading, .trailing], 0)  // Убираем отступы по горизонтали у LazyVGrid
@@ -223,7 +154,7 @@ struct MainView: View {
                     VStack {
                         // Заголовок с названием свежего выпуска подкаста
                         Text("Свежий выпуск подкаста: \(newissue?.name ?? "Подкаст не найден")")
-                            .font(.system(size: 24, weight: .bold))
+                            .customTextStyle(.h1)
                             .foregroundColor(Color(.mainLight))
                             .multilineTextAlignment(.leading)
                             .padding(.bottom, 20)  // Отступ снизу для заголовка
@@ -231,36 +162,7 @@ struct MainView: View {
                         
                         // Если есть первый выпуск, показываем его детали
                         if let firstIssue = newissue?.issue.first {
-                            NavigationLink(destination: IssueDetailView(issue: firstIssue)) {
-                                VStack(alignment: .leading) {
-                                    AsyncImage(url: URL(string: firstIssue.coverURL)) { image in
-                                        image
-                                            .resizable()
-                                            .scaledToFill()  // Растягивает изображение по ширине
-                                            .frame(height: 170)  // Фиксированная высота для изображения
-                                            .clipped()  // Обрезает, если изображение выходит за пределы
-                                    } placeholder: {
-                                        ProgressView()
-                                    }
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))  // Закругление углов
-                                    
-                                    // Хедер с названием выпуска и датой
-                                    HStack(alignment: .center, spacing: 10.0) {
-                                        Text(firstIssue.name) // Название выпуска
-                                            .font(.system(size: 16, weight: .bold))  // Жирный текст
-                                            .foregroundColor(Color("MainLight"))  // Цвет текста
-                                            .lineLimit(2)  // Ограничивает количество строк в случае длинного текста
-                                            .padding(.top, 8)  // Отступ между картинкой и текстом
-                                        
-                                        Spacer()
-                                        
-                                        Text(firstIssue.createdAt) // Дата выпуска
-                                            .font(.system(size: 12, weight: .regular))  // Регулярный текст
-                                            .foregroundColor(Color("MainLight2"))  // Цвет текста для даты
-                                            .lineLimit(1)  // Ограничивает количество строк
-                                            .padding(.top, 8)  // Отступ между картинкой и текстом
-                                    }
-                                }}
+                            IssueCardView(issue: firstIssue)
                         } else {
                             // Сообщение, если нет доступных выпусков
                             Text("Нет доступных выпусков")
@@ -269,6 +171,30 @@ struct MainView: View {
                         }
                     }
                     .padding()  // Общий отступ для всего VStack
+                    VStack {
+                        Text("Чарт выпусков")
+                            .customTextStyle(.h1)
+                            .foregroundColor(Color(.mainLight))
+                            .multilineTextAlignment(.leading)
+                            .padding(.trailing, 100.0)
+                            .padding(.bottom, 20)  // Отступ снизу для заголовка
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        LazyVStack(alignment: .leading, spacing: 16) {
+                            ForEach(chartissues) { issue in
+                                ForEach(0..<3, id: \.self) { index in
+                                    HStack(alignment: .center) {
+                                        Text("\(index + 1).")
+                                            .font(.headline)
+                                            .foregroundColor(Color("MainLight"))
+                                            .frame(width: 20, alignment: .leading) // чтобы цифры были ровно в ряд
+                                        IssueChartCard(issue: chartissues[index])
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                    .padding() 
                 }
                 
             }
@@ -277,7 +203,18 @@ struct MainView: View {
                 PodcastService.shared.fetchPodcasts { podcasts in
                     if let podcasts = podcasts {
                         DispatchQueue.main.async {
-                            self.podcasts = podcasts }}}}
+                            self.podcasts = podcasts }}}
+                IssueAllService.shared.fetchIssues { issues in
+                    if let issues = issues {
+                        print("Получено выпусков: \(issues.count)")
+                        DispatchQueue.main.async {
+                            self.issues = issues
+                        }
+                    } else {
+                        print("Ошибка: не удалось получить выпуски")
+                    }
+                }
+            }
         }
     }
 }
@@ -290,4 +227,3 @@ struct MainView_Previews: PreviewProvider {
          
     }
 }
-

@@ -1,69 +1,86 @@
 import SwiftUI
 
+enum Tab: Int, CaseIterable {
+    case home, recommend, favorite, profile
+
+    var title: String {
+        switch self {
+        case .home: return "Главная"
+        case .recommend: return "Подкасты"
+        case .favorite: return "Профиль"
+        case .profile: return "Настройки"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .home: return "HomeIcon"
+        case .recommend: return "RecIcon"
+        case .favorite: return "LikeIcon"
+        case .profile: return "ProfileIcon"
+        }
+    }
+
+    var activeIcon: String {
+        switch self {
+        case .home: return "ActiveHomeIcon"
+        case .recommend: return "ActiveRecIcon"
+        case .favorite: return "ActiveLikeIcon"
+        case .profile: return "ActiveProfileIcon"
+        }
+    }
+
+    @ViewBuilder
+    var view: some View {
+        switch self {
+        case .home: MainView()
+        case .recommend: RecomendView()
+        case .favorite: FavoriteView()
+        case .profile: ProfileView()
+        }
+    }
+}
+
 struct MainTabView: View {
-    @State private var selectedTab = 0
-    
-    let tabs = [
-        (view: AnyView(MainView()), icon: "house", title: "Главная"),
-        (view: AnyView(RecomendView()), icon: "list.bullet", title: "Подкасты"),
-        (view: AnyView(FavoriteView()), icon: "person.circle", title: "Профиль"),
-        (view: AnyView(ProfileView()), icon: "gear", title: "Настройки")
-    ]
-    
+    @State private var selectedTab: Tab = .home
+
     var body: some View {
         ZStack(alignment: .top) {
-            tabs[selectedTab].view
+            selectedTab.view
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(.background))
+                .background(Color(.mainLight4))
                 .ignoresSafeArea()
                 .padding(.bottom, 30)
             
             CustomTabBar(selectedTab: $selectedTab)
                 .frame(maxWidth: .infinity)
                 .background(Color.clear)
-                
         }
         .padding(.bottom, 0.0)
         .ignoresSafeArea(.all, edges: .bottom)
     }
 }
 struct CustomTabBar: View {
-    @Binding var selectedTab: Int
-    
-    let icons = ["HomeIcon", "RecIcon", "LikeIcon", "ProfileIcon"]
-    let activeIcons = ["ActiveHomeIcon", "ActiveRecIcon", "ActiveLikeIcon", "ActiveProfileIcon"]
+    @Binding var selectedTab: Tab
     
     var body: some View {
         VStack(spacing: 0) {
-            Spacer() // Заставляет таб-бар прижаться к нижнему краю
-            
+            Spacer()
             ZStack {
                 RoundedRectangle(cornerRadius: 30)
-                    .fill(Color.black)
+                    .fill(Color.mainLight4)
                     .frame(height: 100)
                     .shadow(radius: 5)
                 
                 HStack {
-                    ForEach(0..<icons.count, id: \.self) { index in
+                    ForEach(Tab.allCases, id: \.self) { tab in
                         Button(action: {
-                                selectedTab = index
-                            
+                            selectedTab = tab
                         }) {
-                            VStack {
-                                // Используем тернарный оператор для выбора активного или неактивного изображения
-                                Image(selectedTab == index ? activeIcons[index] : icons[index])
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 25, height: 25)
-                                
-                                if selectedTab == index {
-                                    RoundedRectangle(cornerRadius: 2)
-                                        .fill(Color.gray)
-                                        .frame(width: 40, height: 4)
-                                } else {
-                                    Color.clear.frame(height: 4)
-                                }
-                            }
+                            Image(selectedTab == tab ? tab.activeIcon : tab.icon)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 25, height: 25)
                         }
                         .frame(maxWidth: .infinity)
                     }

@@ -51,6 +51,92 @@ class PodcastService {
         task.resume()
     }
 }
+class IssueAllService {
+    static let shared = IssueAllService()
+    
+    // URL для фетчинга данных о подкастах
+    private let issuesURL = URL(string: "http://localhost:3000/api/v1/issues")!
+    
+    func fetchIssues(completion: @escaping ([Issue]?) -> Void) {
+        let task = URLSession.shared.dataTask(with: issuesURL) { data, response, error in
+            if let data = data {
+                do {
+                    let issues = try JSONDecoder().decode([Issue].self, from: data)
+                    completion(issues)
+                } catch {
+                    print("Ошибка при декодировании данных: \(error)")
+                    if let decodingError = error as? DecodingError {
+                        switch decodingError {
+                        case .keyNotFound(let key, let context):
+                            print("Не найден ключ: \(key) в пути: \(context.codingPath)")
+                        case .typeMismatch(let type, let context):
+                            print("Ошибка типа: \(type) в пути: \(context.codingPath)")
+                        case .valueNotFound(let value, let context):
+                            print("Не найдено значение: \(value) в пути: \(context.codingPath)")
+                        case .dataCorrupted(let context):
+                            print("Коррупция данных: \(context)")
+                        @unknown default:
+                            print("Неизвестная ошибка декодирования")
+                        }
+                    }
+                    completion(nil)
+                }
+            } else {
+                print("Ошибка при загрузке данных: \(String(describing: error))")
+                completion(nil)
+            }
+        }
+        task.resume()
+    }
+}
+
+class IssueService {
+    static let shared = IssueService()
+    private let baseURL = "http://localhost:3000/api/v1"
+
+    func fetchIssue(id: Int, completion: @escaping (Issue?) -> Void) {
+        guard let url = URL(string: "\(baseURL)/issues/\(id)") else {
+            print("❌ Ошибка: неверный URL для получения выпуска")
+            completion(nil)
+            return
+        }
+
+        let request = URLRequest(url: url)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Ошибка сети: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                print("❌ Ошибка сервера при загрузке выпуска")
+                completion(nil)
+                return
+            }
+
+            guard let data = data else {
+                print("❌ Нет данных в ответе")
+                completion(nil)
+                return
+            }
+
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let issue = try decoder.decode(Issue.self, from: data)
+                DispatchQueue.main.async {
+                    completion(issue)
+                }
+            } catch {
+                print("❌ Ошибка декодирования выпуска: \(error)")
+                completion(nil)
+            }
+        }.resume()
+    }
+    
+}
 
 class CommentService {
     static let shared = CommentService()
@@ -59,7 +145,7 @@ class CommentService {
     
     func createComment(issueId: Int, content: String, authToken: String, completion: @escaping (Bool) -> Void) {
         // 1. Проверка URL
-        guard let url = URL(string: "\(baseURL)/issues/\(issueId)/comments") else {
+        guard let url = URL(string: "\(baseURL)/comments") else {
             print("❌ Ошибка: Неверный URL для создания комментария")
             completion(false)
             return
@@ -152,6 +238,7 @@ class CommentService {
                 completion(false)
             }
         }
+        
         
         task.resume()
     }

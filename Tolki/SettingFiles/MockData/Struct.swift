@@ -92,8 +92,6 @@ struct Post: Identifiable, Codable {
     }
 
 }
-
-// Структура для выпуска
 struct Issue: Identifiable, Codable {
     var id: Int
     var name: String
@@ -102,15 +100,17 @@ struct Issue: Identifiable, Codable {
     var podcastId: Int
     var coverURL: String
     var comments: [Comment]
-    
+    var podcastName: String?
+
     enum CodingKeys: String, CodingKey {
         case id
         case name
         case description
-        case createdAt = "created_at" // соответствие между JSON и структурой
+        case createdAt = "created_at"
         case podcastId = "podcast_id"
         case coverURL = "cover_url"
         case comments
+        case podcastName = "podcast_name"
     }
 }
 
@@ -132,6 +132,7 @@ struct Comment: Identifiable, Codable {
         case commentable_type
         case commentable_id
     }
+    
 }
 
 struct Theme: Identifiable, Codable {

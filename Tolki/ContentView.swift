@@ -61,6 +61,7 @@ struct ContentView: View {
                                 .foregroundColor(Color(.mainLight5))
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 16)
+                                .autocapitalization(.none)
                         }
                         .background(Color(.mainLight))
                         .cornerRadius(8)
@@ -81,10 +82,12 @@ struct ContentView: View {
                                     TextField("", text: $password)
                                         .customTextStyle(.h3)
                                         .foregroundColor(Color(.mainLight5))
+                                        .autocapitalization(.none)
                                 } else {
                                     SecureField("", text: $password)
                                         .customTextStyle(.h3)
                                         .foregroundColor(Color(.mainLight5))
+                                        .autocapitalization(.none)
                                 }
 
                                 Button(action: {

@@ -21,12 +21,12 @@ struct PodcastDetailView: View {
     var body: some View {
         NavigationView{
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
                     AsyncImage(url: URL(string: podcast.coverURL)) { image in
                         image
                             .resizable()
                             .scaledToFill()  // Растягивает изображение по ширине
-                            .frame(width: .infinity, height: 350.0)  // Фиксированная высота для изображения
+                            .frame(width: 370, height: 350.0)  // Фиксированная высота для изображения
                             .clipped()  // Обрезает, если изображение выходит за пределы
                             .cornerRadius(12)
                         
@@ -462,9 +462,9 @@ struct PodcastDetailView: View {
                     }
                     
                 }
-                .padding()
+                .padding(.horizontal, 24)
             }
-            
+           
             .background(Color(.background))
             .onAppear {
                 PodcastService.shared.fetchPodcasts { podcasts in
@@ -476,7 +476,9 @@ struct PodcastDetailView: View {
                 }
             }
         }
+        
         }
+    
 }
 
 #Preview {
