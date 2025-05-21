@@ -14,6 +14,7 @@ struct IssueDetailView: View {
     @State private var commentContent: String = ""
     @State private var selection: Int = 0
     let menuItems = ["ВСЕ", "ОТЗЫВЫ", "ОБСУЖДЕНИЯ", "ПОХОЖЕЕ"]
+    @Environment(\.dismiss) var dismiss
     
     
     var relatedIssues: [Issue] {
@@ -22,6 +23,26 @@ struct IssueDetailView: View {
     
     var body: some View {
         ScrollView {
+            HStack {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image("ArrowBack")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                }
+                Spacer()
+                HStack (spacing: 12) {
+                    Image("LikeIcon")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                    Image("BurgerMenuIcon")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                }
+            }
+            .frame(width: 370)
+            
             VStack(alignment: .leading, spacing: 16) {
                 AsyncImage(url: URL(string: issue.coverURL)) { image in
                     image
@@ -322,7 +343,7 @@ struct IssueDetailView: View {
             .frame(width:.infinity)
             
         }
-        
+        .navigationBarBackButtonHidden(true)
         .padding(.horizontal, 16)
         .background(Color("Background"))
         

@@ -1,153 +1,156 @@
 import SwiftUI
 
-class ProfileViewModel: ObservableObject {
-    @Published var currentProfile: UserProfile?
-    @Published var isLoading = false
-    @Published var error: String?
-    
-    private let keychain = KeychainService()
-    
-    func loadCurrentProfile() {
-        isLoading = true
-        error = nil
-        
-        let token = keychain.getString(forKey: ViewModel.Const.tokenKey) ?? ""
-        print("🔑 Загружаю профиль с токеном: \(token)")
-        
-        guard !token.isEmpty else {
-            error = "Токен авторизации не найден"
-            isLoading = false
-            return
-        }
-        
-        ProfileService.shared.fetchCurrentProfile(authToken: token) { [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                
-                switch result {
-                case .success(let profile):
-                    print("✅ Профиль успешно загружен: \(profile)")
-                    self?.currentProfile = profile
-                case .failure(let error):
-                    print("❌ Ошибка загрузки профиля: \(error.localizedDescription)")
-                    self?.error = error.localizedDescription
-                }
-            }
-        }
-    }
+
+// Тестовые данные для UserProfile с учётом твоей структуры
+extension UserProfile {
+    static let testProfile = UserProfile(
+        id: 0,
+        email: "test@example.com",
+        profile: Profile(
+            name: "Тестовый пользователь",
+            bio: "Это тестовое описание профиля для тестирования.",
+            level: "1",
+            avatarURL: "ProfileAvatar"
+        ),
+        author: nil,
+        isAuthor: false,
+      comments: []
+    )
 }
+
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .padding(.top, 50)
-                } else if let error = viewModel.error {
-                    ErrorView(error: error)
-                } else if let profile = viewModel.currentProfile {
-                    ProfileHeaderView(profile: profile)
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text(profile.profile.bio)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                        
-                        HStack {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
-                            Text("Уровень: \(profile.profile.level)")
-                        }
-                        .font(.subheadline)
-                        
-                        if profile.isAuthor {
-                            Label("Автор", systemImage: "checkmark.seal.fill")
-                                .foregroundColor(.blue)
+        NavigationView {
+            ScrollView {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .padding(.top, 50)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else if let error = viewModel.error {
+                            ErrorView(error: error)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else if let profile = viewModel.currentProfile {
+                            HStack(spacing: 16) {
+                                Spacer()
+                                Button(action: {
+                                    //                                viewModel.signOut()
+                                }) {
+                                    Text("Выйти")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(Color("MainLight"))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(Color("MainLight4"))
+                                        .cornerRadius(8)
+                                }
+                                
+                                NavigationLink(destination: SettingsView()) {
+                                    Image("SettingIcon")
+                                        .resizable()
+                                        .frame(width: 30, height: 30)
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 12) {
+                                if let url = URL(string: profile.profile.avatarURL), !profile.profile.avatarURL.isEmpty {
+                                    AsyncImage(url: url) { image in
+                                        image.resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(maxWidth: .infinity, minHeight: 200)
+                                            .cornerRadius(12)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    } placeholder: {
+                                        ProgressView()
+                                            .frame(maxWidth: .infinity, minHeight: 200)
+                                    }
+                                } else {
+                                    Image(systemName: "person.crop.circle.fill")
+                                        .resizable()
+                                        .frame(width: 100, height: 100)
+                                        .foregroundColor(.gray)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                
+                                Text(profile.profile.name)
+                                    .padding(.top, 32.0)
+                                    .customTextStyle(.display)
+                                    .foregroundColor(Color("MainLight"))
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                HStack(spacing: 4) {
+                                    Text("знаток города")
+                                    Text(profile.profile.level)
+                                    Text("уровня")
+                                }
+                                .customTextStyle(.text)
+                                .foregroundColor(Color("MainLight"))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            // Блок комментариев пользователя
+                            if let comments = profile.comments, !comments.isEmpty {
+                                // Сортируем по дате (новые сверху)
+                                let sortedComments = comments.sorted { $0.createdAt > $1.createdAt }
+                                
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("Мои комментарии")
+                                        .font(.headline)
+                                        .foregroundColor(Color("MainLight"))
+                                        .padding(.top)
+                                    
+                                    ForEach(sortedComments) { comment in
+                                        CommentCard(comment: comment)
+                                    }
+                                }
+                            } else {
+                                Text("Вы пока не оставляли комментариев")
+                                    .foregroundColor(Color("MainLight"))
+                                    .padding()
+                            }
+                        } else {
+                            Text("Нет данных профиля")
+                                .foregroundColor(.secondary)
+                                .padding(.top, 50)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                     .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                } else {
-                    Text("Нет данных профиля")
-                        .foregroundColor(.secondary)
-                        .padding(.top, 50)
+                }
+                .background(Color(.background))
+                .onAppear {
+                    viewModel.loadCurrentProfile()
+                    viewModel.loadComments()
                 }
             }
-            .padding()
-        }
-        .navigationTitle("Профиль")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            viewModel.loadCurrentProfile()
+            .background(Color(.background))
         }
     }
-}
-// Вспомогательные View — оставил без изменений
-struct ProfileHeaderView: View {
-    let profile: UserProfile
     
-    var body: some View {
-        VStack(spacing: 12) {
-            if let url = URL(string: profile.profile.avatarURL) {
-                AsyncImage(url: url) { image in
-                    image.resizable()
-                         .aspectRatio(contentMode: .fill)
-                         .frame(width: 100, height: 100)
-                         .clipShape(Circle())
-                         .overlay(Circle().stroke(Color.gray, lineWidth: 2))
-                } placeholder: {
-                    ProgressView()
-                }
-            } else {
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .frame(width: 100, height: 100)
-                    .foregroundColor(.gray)
+}
+    struct ProfilePreviewView: View {
+        @StateObject private var viewModel = ProfileViewModel()
+        
+        var body: some View {
+            NavigationView {
+                ProfileView()
+                    .environmentObject(viewModel)
+                    .onAppear {
+                        viewModel.loadCurrentProfile()
+                    }
             }
-            
-            Text(profile.profile.name)
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            Text(profile.email)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
         }
-        .padding(.top)
     }
-}
-
-struct ErrorView: View {
-    let error: String
     
-    var body: some View {
-        VStack {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle)
-                .foregroundColor(.red)
-            Text(error)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.red)
+    struct ProfilePreviewView_Previews: PreviewProvider {
+        static var previews: some View {
+            ProfilePreviewView()
         }
-        .padding()
     }
-}
-
-struct AdminBadge: View {
-    var body: some View {
-        HStack {
-            Image(systemName: "checkmark.seal.fill")
-                .foregroundColor(.green)
-            Text("Администратор")
-                .font(.caption)
-                .bold()
-        }
-        .padding(6)
-        .background(Color.green.opacity(0.2))
-        .cornerRadius(8)
-    }
-}

@@ -8,7 +8,7 @@ struct ConView: View {
     ]
     
     @State private var currentPage = 0
-    @State private var hasOnboarded = false
+    @AppStorage("hasCompletedOnboarding") private var hasOnboarded: Bool = false
     
     var body: some View {
         Group {

@@ -8,6 +8,7 @@
 import SwiftUI
 
 enum TextStyle {
+    case display
     case h1
     case h2
     case h3
@@ -26,6 +27,7 @@ enum TextStyle {
 
     var size: CGFloat {
         switch self {
+        case .display: return 32
         case .h1: return 24
         case .h2: return 20
         case .h3Button, .h3: return 18
@@ -35,7 +37,7 @@ enum TextStyle {
 
     var letterSpacing: CGFloat {
         switch self {
-        case .h1: return 0.72
+        case .h1, .display: return 0.72
         case .h2: return 0.6
         case .h3Button, .h3: return 0.48
         case .h4, .text: return 0.36
@@ -44,7 +46,7 @@ enum TextStyle {
 
     var lineHeight: CGFloat? {
         switch self {
-        case .h1: return 26.4
+        case .h1, .display: return 26.4
         case .h2: return 22.0
         case .h4, .text: return 13.2
         default: return nil

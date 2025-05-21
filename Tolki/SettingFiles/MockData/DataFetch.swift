@@ -137,11 +137,52 @@ class IssueService {
     }
     
 }
+// AllCommentService удалён, функционал перемещён в CommentService
 
 class CommentService {
     static let shared = CommentService()
     
     private let baseURL = "http://localhost:3000/api/v1" // Замените на ваш реальный URL
+    
+    func fetchAllComments(completion: @escaping ([Comment]) -> Void) {
+        guard let url = URL(string: "\(baseURL)/comments") else {
+            print("❌ Ошибка: Неверный URL для получения комментариев")
+            completion([])
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("❌ Ошибка сети: \(error)")
+                DispatchQueue.main.async {
+                    completion([])
+                }
+                return
+            }
+            
+            guard let data = data else {
+                print("❌ Нет данных в ответе")
+                DispatchQueue.main.async {
+                    completion([])
+                }
+                return
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let comments = try decoder.decode([Comment].self, from: data)
+                DispatchQueue.main.async {
+                    completion(comments)
+                }
+            } catch {
+                print("❌ Ошибка декодирования комментариев: \(error)")
+                DispatchQueue.main.async {
+                    completion([])
+                }
+            }
+        }.resume()
+    }
     
     func createComment(issueId: Int, content: String, authToken: String, completion: @escaping (Bool) -> Void) {
         // 1. Проверка URL
@@ -242,6 +283,8 @@ class CommentService {
         
         task.resume()
     }
+    
+   
 }
 
 class ThemeFetcher: ObservableObject {
@@ -333,5 +376,82 @@ class ProfileService {
         }
         
         task.resume()
+    }
+}
+
+
+
+
+class ProfileViewModel: ObservableObject {
+    @Published var currentProfile: UserProfile? = UserProfile.testProfile
+    @Published var isLoading = false
+    @Published var error: String?
+    @Published var allComments: [Comment] = []
+
+    private let keychain = KeychainService()
+
+    func loadCurrentProfile() {
+        isLoading = true
+        error = nil
+
+        let token = keychain.getString(forKey: ViewModel.Const.tokenKey) ?? ""
+
+        guard !token.isEmpty else {
+            isLoading = false
+            return
+        }
+
+        ProfileService.shared.fetchCurrentProfile(authToken: token) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+
+                switch result {
+                case .success(let profile):
+                    self?.currentProfile = profile
+                    self?.loadComments() // ✅ Загружаем комментарии после профиля
+                case .failure(let error):
+                    self?.error = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    func loadComments() {
+        CommentService.shared.fetchAllComments { [weak self] comments in
+            DispatchQueue.main.async {
+                self?.allComments = comments
+            }
+        }
+    }
+}
+
+struct ErrorView: View {
+    let error: String
+    
+    var body: some View {
+        VStack {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.largeTitle)
+                .foregroundColor(.red)
+            Text(error)
+                .multilineTextAlignment(.center)
+                .foregroundColor(.red)
+        }
+        .padding()
+    }
+}
+
+struct AdminBadge: View {
+    var body: some View {
+        HStack {
+            Image(systemName: "checkmark.seal.fill")
+                .foregroundColor(.green)
+            Text("Администратор")
+                .font(.caption)
+                .bold()
+        }
+        .padding(6)
+        .background(Color.green.opacity(0.2))
+        .cornerRadius(8)
     }
 }

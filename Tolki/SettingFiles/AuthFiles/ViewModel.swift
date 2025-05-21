@@ -107,7 +107,28 @@ final class ViewModel: ObservableObject {
         }
     }
     
+    func signOut() {
+        let endpoint = AuthEndpoint.signOut(token: keychain.getString(forKey: Const.tokenKey) ?? "")
+        let request = Request(endpoint: endpoint, method: .post, body: nil) // Обычно выход - POST без тела
 
+        worker.load(request: request) { [weak self] result in
+            switch result {
+            case .failure(let error):
+                print("Ошибка выхода: \(error.localizedDescription)")
+            case .success(let data):
+                print("Успешный выход, ответ сервера: \(String(data: data ?? Data(), encoding: .utf8) ?? "")")
+
+                // Очистить токен
+                self?.keychain.setString("", forKey: Const.tokenKey)
+
+                // Обновить состояние в главном потоке
+                DispatchQueue.main.async {
+                    self?.gotToken = false
+                }
+            }
+        }
+    }
+    
     func signIn(
         email: String,
         password: String
@@ -171,6 +192,7 @@ enum AuthEndpoint: Endpoint {
     case signin
     case users(token: String)
     case me(token: String) // ✅ добавляем
+    case signOut(token: String)
 
     var rawValue: String {
         switch self {
@@ -178,6 +200,7 @@ enum AuthEndpoint: Endpoint {
         case .signin: return "sign_in"
         case .users: return "users"
         case .me: return "users/me" // ✅ путь до метода "me"
+        case .signOut: return "sign_out"
         }
     }
 

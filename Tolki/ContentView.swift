@@ -18,12 +18,7 @@ struct ContentView: View {
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
         
-        for family in UIFont.familyNames {
-            print("Family: \(family)")
-            for name in UIFont.fontNames(forFamilyName: family) {
-                print("  Font name: \(name)")
-            }
-        }
+        
     }
 
     var body: some View {

@@ -11,6 +11,7 @@ import SwiftUI
 struct PostDetailView: View {
     var post: Post
     @State private var posts: [Post] = []
+    @Environment(\.dismiss) var dismiss
     
     var relatedPosts: [Post] {
         posts.filter { $0.podcastId == post.podcastId && $0.id != post.id }
@@ -18,6 +19,17 @@ struct PostDetailView: View {
     
     var body: some View {
         ScrollView {
+            HStack {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image("ArrowBack")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                }
+                Spacer()
+            }
+            .frame(width: 370)
             VStack(alignment: .leading, spacing: 16) {
                 
                 
@@ -134,7 +146,7 @@ struct PostDetailView: View {
     
         .padding(.horizontal, 16)
         .background(Color("Background"))
-    
+        .navigationBarBackButtonHidden(true)
     
 }
 }

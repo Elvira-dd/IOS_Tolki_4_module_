@@ -13,6 +13,7 @@ struct PodcastDetailView: View {
     let menuItems = ["ВСЕ", "ВЫПУСКИ", "ОТЗЫВЫ", "ПОСТЫ"]
     var podcast: Podcast
     @State private var podcasts: [Podcast] = []
+    @Environment(\.dismiss) var dismiss
     
     var samepodcasts: [Podcast] {
         podcasts.filter { [4, 5, 6, 7].contains($0.id) }
@@ -21,6 +22,25 @@ struct PodcastDetailView: View {
     var body: some View {
         NavigationView{
             ScrollView {
+                HStack {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image("ArrowBack")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                    }
+                    Spacer()
+                    HStack (spacing: 12) {
+                        Image("LikeIcon")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                        Image("BurgerMenuIcon")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                    }
+                }
+                .frame(width: 370)
                 VStack(alignment: .leading, spacing: 24) {
                     AsyncImage(url: URL(string: podcast.coverURL)) { image in
                         image
@@ -136,42 +156,9 @@ struct PodcastDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) { // Промежуток между элементами
+                        HStack(spacing: 8) {
                             ForEach(podcast.issue) { issue in
-                                NavigationLink(destination: IssueDetailView(issue: issue)) {
-                                    VStack(alignment: .leading) {
-                                        AsyncImage(url: URL(string: issue.coverURL)) { image in
-                                            image
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 300.0, height: 200.0)
-                                                .clipped()
-                                        } placeholder: {
-                                            ProgressView()
-                                        }
-                                        .frame(width: .infinity, height: 150) // Размер изображения
-                                        .clipShape(RoundedRectangle(cornerRadius: 10)) // Скругление
-                                        
-                                        VStack( alignment: .leading, spacing: 6.0) {
-                                            Text(issue.name) // Название выпуска
-                                                .font(.system(size: 16, weight: .bold))  // Жирный текст
-                                                .foregroundColor(Color("MainLight"))  // Цвет текста
-                                                .multilineTextAlignment(.leading)
-                                                .lineLimit(2)  // Ограничивает количество строк в случае длинного текста
-                                                .padding(.top, 8)  // Отступ между картинкой и текстом
-                                            
-                                            
-                                            
-                                            Text(issue.createdAt) // Дата выпуска
-                                                .font(.system(size: 12, weight: .regular))  // Регулярный текст
-                                                .foregroundColor(Color("MainLight2"))  // Цвет текста для даты
-                                                .lineLimit(1)  // Ограничивает количество строк
-                                                .padding(.top, 8)  // Отступ между картинкой и текстом
-                                        }
-                                    }
-                                    .frame(width: 300) // Фиксированная ширина карточки
-                                    .padding(.vertical, 8)
-                                }
+                                IssueCardView(issue: issue)
                             }
                         }
                         
@@ -264,45 +251,9 @@ struct PodcastDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) { // Промежуток между элементами
+                        HStack(spacing: 16) {
                             ForEach(samepodcasts) { podcast in
-                                NavigationLink(destination: PodcastDetailView(podcast: podcast)) {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        AsyncImage(url: URL(string: podcast.coverURL)) { image in
-                                            image
-                                                .resizable()
-                                                .scaledToFill()  // Растягивает изображение по ширине
-                                                .frame(height: 170)  // Фиксированная высота для изображения
-                                                .clipped()  // Обрезает, если изображение выходит за пределы
-                                        } placeholder: {
-                                            ProgressView()
-                                        }
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))  // Закругление углов
-                                        
-                                        Text(podcast.name)
-                                            .font(.system(size: 16, weight: .bold))  // Жирный текст
-                                            .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                            .lineLimit(1)  // Ограничивает количество строк в случае длинного текста
-                                            .padding(.top, 8)  // Отступ между картинкой и текстом
-                                        Text(podcast.description)
-                                            .font(.system(size: 12, weight: .regular))  // Жирный текст
-                                            .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                            .lineLimit(3)  // Ограничивает количество строк в случае длинного текста
-                                            .padding(.top, -5)  // Отступ между картинкой и текстом
-                                        HStack(alignment: .center) {
-                                            Image("persons_icon")
-                                                .resizable()  // Делаем изображение масштабируемым
-                                                .scaledToFit()  // Подгоняем изображение по размеру контейнера
-                                                .frame(width: 20, height: 20)  // Устанавливаем размеры
-                                            Text("1567 слушателей")
-                                                .font(.system(size: 12, weight: .regular))  // Жирный текст
-                                                .foregroundColor(Color("MainLight"))  // Цвет текста по умолчанию
-                                                .lineLimit(3)  // Ограничивает количество строк в случае длинного текста
-                                                .padding(.top, -5)  // Отступ между картинкой и текстом
-                                        }
-                                    }
-                                    .frame(width: 180.0, height: 250)
-                                }
+                                PodcastCardView(podcast:podcast)
                             }
                         }
                         
@@ -321,164 +272,27 @@ struct PodcastDetailView: View {
                         .padding(.top, 20)  // Отступ снизу для заголовка
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    ForEach(podcast.posts) { post in
-                        NavigationLink(destination: PodcastDetailView(podcast: podcast)) {
-                            HStack(alignment: .center, spacing: 12) {
-                                AsyncImage(url: URL(string: podcast.coverURL)) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 45, height: 45)
-                                        .clipped()
-                                        .cornerRadius(100)
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                
-                                Text(podcast.name)
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(Color("MainLight"))
-                                    .lineLimit(2)
-                                    .padding(.top, 8)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    if !podcast.posts.isEmpty {
+                        ForEach(podcast.posts) { post in
+                            FullPostCard(post: post, podcast: podcast)
                         }
-                        .frame(alignment: .leading)
-                        
-                        
-                        VStack(alignment: .leading) {
-                            Text(post.title)
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(Color("MainLight"))
-                                .multilineTextAlignment(.leading)
-                            
-                            
-                            
-                            Text(post.createdAt)
-                                .font(.system(size: 14, weight: .regular))
-                                .foregroundColor(Color("MainLight"))
-                                .multilineTextAlignment(.leading)
-                                .padding(.top, 8)
-                            
-                            HStack(spacing: 12) {
-                                Image("IconLike")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 24, height: 24)
-                                
-                                Image("IconDislike")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 24, height: 24)
-                                Image("IconShare")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 24, height: 24)
-                                Spacer()
-                                NavigationLink(destination: PostDetailView(post: post)) {
-                                    Text("Перейти в обсуждение")
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(Color("Background"))
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical,8)
-                                        .background(Color("MainGreen"))
-                                        .cornerRadius(8)
-                                }
-                            }
-                            .padding(.top, 16)
-                        }
-                        
-                        
-                        
-                        
-                        if let firstComment = post.comments.first {
-                            VStack(alignment: .leading) {
-                                HStack(alignment: .center) {
-                                    Image("ProfileAvatar")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 32, height: 32)
-                                        .cornerRadius(50)
-                                    
-                                    VStack(alignment: .leading) {
-                                        Text(firstComment.userName)
-                                            .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(Color("MainLight"))
-                                        
-                                        Text("Знаток подкастов 8 уровня")
-                                            .font(.system(size: 12, weight: .regular))
-                                            .foregroundColor(Color("MainLight"))
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Text(firstComment.createdAt)
-                                        .font(.system(size: 12, weight: .regular))
-                                        .foregroundColor(Color("MainLight"))
-                                }
-                                
-                                Text(firstComment.content)
-                                    .font(.system(size: 14, weight: .regular))
-                                    .foregroundColor(Color("MainLight"))
-                                    .multilineTextAlignment(.leading)
-                                    .padding(.top, 8)
-                                
-                                HStack(spacing: 12) {
-                                    Image("IconLike")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 24, height: 24)
-                                    
-                                    Image("IconDislike")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 24, height: 24)
-                                }
-                                .padding(.top, 16)
-                            }
-                            .padding(16)
-                            .background(Color("MainLight4"))
-                            .cornerRadius(8)
-                            .padding(.top, 24)
-                        } else {
-                            Text("Нет доступных выпусков")
-                                .foregroundColor(.gray)
-                                .padding(.top, 8)
-                        }
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
+                    } else {
+                        Text("Нет постов")
+                            .foregroundColor(.gray)
                     }
-                    
                 }
                 .padding(.horizontal, 24)
             }
-           
+            
             .background(Color(.background))
             .onAppear {
                 PodcastService.shared.fetchPodcasts { podcasts in
                     if let podcasts = podcasts {
                         DispatchQueue.main.async {
                             self.podcasts = podcasts
-                        }
-                    }
-                }
-            }
-        }
-        
-        }
-    
+                        }}}}}
+        .navigationBarBackButtonHidden(true)
+    }
 }
 
 #Preview {

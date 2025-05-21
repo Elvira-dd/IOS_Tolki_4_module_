@@ -118,7 +118,7 @@ struct Comment: Identifiable, Codable {
     var id: Int
     let commentable_type: String?
     let commentable_id: Int?
-    var userId: Int
+    var userId: Int?
     var content: String
     var userName: String
     var createdAt: String
@@ -152,6 +152,7 @@ struct UserProfile: Codable {
     let profile: Profile
     let author: Author?
     let isAuthor: Bool
+    var comments: [Comment]?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -159,6 +160,7 @@ struct UserProfile: Codable {
         case profile
         case author
         case isAuthor = "is_author"
+        case comments
     }
 }
 
