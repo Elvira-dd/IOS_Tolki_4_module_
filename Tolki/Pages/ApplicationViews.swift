@@ -59,6 +59,90 @@ struct PodcastCardView: View {
 }
 
 
+struct ShortPodcastCardView: View {
+    let podcast: FavoritePodcast
+
+    var body: some View {
+        
+            VStack(alignment: .leading, spacing: 8) {
+                AsyncImage(url: URL(string: podcast.coverURL)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 170)
+                        .frame(width: 170)
+                        .clipped()
+                } placeholder: {
+                    ProgressView()
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                Text(podcast.name)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color("MainLight"))
+                    .lineLimit(1)
+                    .padding(.top, 8)
+
+                Text(podcast.description)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(Color("MainLight"))
+                    .lineLimit(2)
+                    .padding(.top, -5)
+
+                HStack(alignment: .center) {
+                    Image("persons_icon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
+                    Text("1567 слушателей")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(Color("MainLight"))
+                        .lineLimit(3)
+                        .padding(.top, -5)
+                }
+            }
+            .frame(height: 250)
+            .frame(width: 170)
+        
+    }
+}
+
+struct ShortIssueCardView: View {
+    let issue: FavoriteIssue
+
+    var body: some View {
+     
+            VStack(alignment: .leading) {
+                AsyncImage(url: URL(string: issue.coverURL)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: 360)
+                        .frame(height: 200)
+                        .clipped()
+                } placeholder: {
+                    ProgressView()
+                        .frame(height: 200)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                VStack(alignment: .leading, spacing: 6.0) {
+                    Text(issue.name)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Color("MainLight"))
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                        .padding(.top, 8)
+
+                    
+                }
+            }
+            .frame(maxWidth: 360, alignment: .leading)
+        }
+    
+}
+
+
 struct IssueCardView: View {
     let issue: Issue
 
@@ -86,7 +170,7 @@ struct IssueCardView: View {
                         .lineLimit(2)
                         .padding(.top, 8)
 
-                    Text(issue.createdAt)
+                    Text(issue.createdAt ?? "Дата неизвестна")
                         .font(.system(size: 12, weight: .regular))
                         .foregroundColor(Color("MainLight2"))
                         .lineLimit(1)
@@ -97,6 +181,7 @@ struct IssueCardView: View {
         }
     }
 }
+
 
 struct IssueChartCard: View {
     let issue: Issue
@@ -186,7 +271,7 @@ struct FullIssueCard: View {
                                 .multilineTextAlignment(.leading)
                                 .padding(.top, 8)
                             
-                            Text(firstIssue.createdAt)
+                            Text(firstIssue.createdAt ?? "Дата неизвестна")
                                 .font(.system(size: 14, weight: .regular))
                                 .foregroundColor(Color("MainLight"))
                                 .multilineTextAlignment(.leading)

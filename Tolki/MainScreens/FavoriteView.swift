@@ -1,24 +1,17 @@
-//
-//  FavoriteView.swift
-//  Tolki
-//
-//  Created by Эльвира on 27.03.2025.
-//
-
 import SwiftUI
 
 struct FavoriteView: View {
     @State private var selection: Int = 0
     let menuItems = ["ПОДКАСТЫ", "ВЫПУСКИ"]
-    @State private var podcasts: [Podcast] = []
-    @State private var issues: [Issue] = []
+    @State private var podcasts: [FavoritePodcast] = []
+    @State private var issues: [FavoriteIssue] = []
     
-    var favoritePodcasts: [Podcast] {
-        podcasts.filter { [10,11, 16, 17].contains($0.id) }
+    var favoritePodcasts: [FavoritePodcast] {
+        podcasts
     }
-    var filteredFavoriteIssues: [Issue] {
-            issues.filter { [10,11, 16, 17].contains($0.id) }
-        }
+    var filteredFavoriteIssues: [FavoriteIssue] {
+        issues
+    }
     
     var body: some View {
         NavigationView {
@@ -47,53 +40,42 @@ struct FavoriteView: View {
                     Spacer()
                 }
                 .padding()
+                
                 Group {
                     if selection == 0 {
                         LazyVGrid(columns: [
                             GridItem(.flexible(), spacing: 16),
                             GridItem(.flexible(), spacing: 16)
                         ], spacing: 16) {
-                            ForEach(favoritePodcasts) { podcast in
-                                PodcastCardView(podcast: podcast)
+                            ForEach(favoritePodcasts, id: \.id) { podcast in
+                                ShortPodcastCardView(podcast: podcast)
                             }
                         }
                     } else {
                         VStack {
-                            ForEach(filteredFavoriteIssues) { issue in
-                                IssueCardView(issue: issue)
+                            ForEach(filteredFavoriteIssues, id: \.id) { issue in
+                                ShortIssueCardView(issue: issue)
                             }
                         }
                     }
                 }
                 .ignoresSafeArea(edges: .horizontal)
                 .padding(.horizontal, 24)
-                
             }
-            
             .background(Color(.background))
-            
             .onAppear {
-                PodcastService.shared.fetchPodcasts { podcasts in
-                    if let podcasts = podcasts {
-                        DispatchQueue.main.async {
+                FavoriteService.shared.fetchFavorites { podcasts, issues in
+                    DispatchQueue.main.async {
+                        if let podcasts = podcasts {
                             self.podcasts = podcasts
+                        }
+                        if let issues = issues {
+                            self.issues = issues
                         }
                     }
                 }
-                IssueAllService.shared.fetchIssues { issues in
-                        if let issues = issues {
-                            print("Получено выпусков: \(issues.count)")
-                            DispatchQueue.main.async {
-                                self.issues = issues
-                            }
-                        } else {
-                            print("Ошибка: не удалось получить выпуски")
-                        }
-                    }
             }
-            
         }
-        
     }
 }
 

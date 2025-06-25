@@ -314,7 +314,7 @@ class ThemeService {
             }
 
             if let jsonString = String(data: data, encoding: .utf8) {
-                print("✅ Ответ сервера по тематикам: \(jsonString)")
+                
             }
 
             do {
@@ -331,11 +331,11 @@ class ThemeService {
         }.resume()
     }
 }
-
 class ProfileService {
     static let shared = ProfileService()
     private let baseURL = "http://localhost:3000/api/v1"
     
+    // Получение текущего профиля
     func fetchCurrentProfile(authToken: String, completion: @escaping (Result<UserProfile, Error>) -> Void) {
         guard let url = URL(string: "\(baseURL)/me") else {
             completion(.failure(URLError(.badURL)))
@@ -347,8 +347,7 @@ class ProfileService {
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            // Проверка ошибки сети
+        URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
                     completion(.failure(error))
@@ -356,7 +355,6 @@ class ProfileService {
                 return
             }
             
-            // Проверка HTTP статус-кода
             guard let httpResponse = response as? HTTPURLResponse else {
                 DispatchQueue.main.async {
                     completion(.failure(URLError(.badServerResponse)))
@@ -364,9 +362,8 @@ class ProfileService {
                 return
             }
             
-            print("Статус код: \(httpResponse.statusCode)")
+            print("🔎 Статус код: \(httpResponse.statusCode)")
             
-            // Обработка данных ответа
             guard let data = data else {
                 DispatchQueue.main.async {
                     completion(.failure(URLError(.cannotParseResponse)))
@@ -374,12 +371,10 @@ class ProfileService {
                 return
             }
             
-            // Логирование для отладки
             if let responseString = String(data: data, encoding: .utf8) {
-                print("Ответ сервера: \(responseString)")
+                print("📄 Ответ сервера: \(responseString)")
             }
             
-            // Декодирование
             do {
                 let decoder = JSONDecoder()
                 let profile = try decoder.decode(UserProfile.self, from: data)
@@ -388,17 +383,68 @@ class ProfileService {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    print("Ошибка декодирования: \(error)")
+                    print("❌ Ошибка декодирования: \(error)")
                     completion(.failure(error))
                 }
             }
+        }.resume()
+    }
+    
+    // Обновление профиля
+    func updateProfile(name: String, bio: String, level: String, authToken: String, completion: @escaping (Bool) -> Void) {
+        
+        guard let url = URL(string: "\(baseURL)/profiles/me") else {
+            print("❌ Неверный URL для обновления профиля")
+            completion(false)
+            return
         }
         
-        task.resume()
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        
+        let body: [String: Any] = [
+            "profile": [
+                "name": name,
+                "bio": bio,
+                "level": level
+            ]
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("❌ Ошибка сериализации тела запроса: \(error)")
+            completion(false)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Ошибка сети: \(error)")
+                completion(false)
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("❌ Неверный ответ сервера")
+                completion(false)
+                return
+            }
+            
+            print("🔧 Ответ сервера: \(httpResponse.statusCode)")
+            
+            if (200...299).contains(httpResponse.statusCode) {
+                print("✅ Профиль успешно обновлён")
+                completion(true)
+            } else {
+                print("❌ Ошибка сервера: статус \(httpResponse.statusCode)")
+                completion(false)
+            }
+        }.resume()
     }
 }
-
-
 
 
 class ProfileViewModel: ObservableObject {
@@ -474,3 +520,44 @@ struct AdminBadge: View {
         .cornerRadius(8)
     }
 }
+
+class FavoriteService {
+    
+    static let shared = FavoriteService()
+    private init() {}
+    
+    func fetchFavorites(completion: @escaping ([FavoritePodcast]?, [FavoriteIssue]?) -> Void) {
+        guard let url = URL(string: "http://localhost:3000/api/v1/favorites") else {
+            print("Ошибка: неверный URL")
+            completion(nil, nil)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            
+            if let error = error {
+                print("Ошибка запроса: \(error.localizedDescription)")
+                completion(nil, nil)
+                return
+            }
+            
+            guard let data = data else {
+                print("Ошибка: данные пустые")
+                completion(nil, nil)
+                return
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                let favoritesResponse = try decoder.decode(FavoriteResponse.self, from: data)
+                completion(favoritesResponse.podcasts, favoritesResponse.issues)
+            } catch {
+                print("Ошибка парсинга: \(error.localizedDescription)")
+                print(String(data: data, encoding: .utf8) ?? "Не удалось декодировать данные в строку")
+                completion(nil, nil)
+            }
+        }.resume()
+    }
+}
+
+// Модель ответа от сервера

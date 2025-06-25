@@ -13,7 +13,7 @@ struct TolkiApp: App {
     
     var body: some Scene {
         WindowGroup {
-                MainView()
+                OnboardingView(viewModel: ViewModel())
             
         }
     }

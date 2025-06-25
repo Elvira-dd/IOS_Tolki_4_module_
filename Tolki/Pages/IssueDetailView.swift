@@ -211,18 +211,19 @@ struct IssueDetailView: View {
                             DispatchQueue.main.async {
                                 commentContent = ""
                             }
+                            // Отдельный запрос за обновлённым выпуском
                             IssueService.shared.fetchIssue(id: issue.id) { updatedIssue in
                                 if let updatedIssue = updatedIssue {
-                                    print("🔁 Новый issue содержит \(updatedIssue.comments.count) комментариев")
+                                    print("🔄 Новый выпуск содержит \(updatedIssue.comments.count) комментариев")
                                     DispatchQueue.main.async {
                                         self.issue = updatedIssue
                                     }
                                 } else {
-                                    print("⚠️ Не удалось получить обновлённый issue")
+                                    print("⚠️ Не удалось получить обновлённый выпуск")
                                 }
                             }
                         } else {
-                            print("❌ Комментарий не создан — fetchIssue не вызывается")
+                            print("❌ Комментарий не создан — выпуск не обновляем")
                         }
                     }
                 }) {
@@ -238,7 +239,7 @@ struct IssueDetailView: View {
                     Text("Нет комментариев")
                         .foregroundColor(.gray)
                 } else {
-                    ForEach(issue.comments) { comment in
+                    ForEach(issue.comments.sorted { $0.createdAt > $1.createdAt }) { comment in
                         VStack(alignment: .leading) {
                             HStack(alignment: .center) {
                                 Image("ProfileAvatar")
