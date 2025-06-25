@@ -13,16 +13,8 @@ struct TolkiApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if hasCompletedOnboarding {
-                ContentView(viewModel: ViewModel())
-            } else {
-                ConView()
-            }
+                MainView()
+            
         }
     }
 }
-#Preview {
-    ContentView(viewModel: ViewModel())
-    
-}
-

@@ -5,7 +5,7 @@ struct MainView: View {
     @State private var searchText = ""
     @State private var selection: Int = 0
     let menuItems = ["ВСЕ", "НОВОЕ", "ЧАРТЫ", "ПОДБОРКИ"]
-    
+    @State private var themes: [Theme] = []
     @State private var podcasts: [Podcast] = [] // Это твои подкасты, полученные с сервера
     @State private var issues: [Issue] = []
     // Вытаскиваем только подкасты с id 4, 5, 6, 7
@@ -28,12 +28,49 @@ struct MainView: View {
         NavigationView {
             ScrollView {
                 VStack {
-                    Image("Logo_full_long")
-                        .resizable()  // Делаем изображение масштабируемым
-                        .scaledToFit()  // Подгоняем изображение по размеру контейнера
-                        .frame(width: 160)  // Устанавливаем размеры
-                        .padding(.top, 70.0)
-                    
+                    ZStack {
+                        Image("BG_MainPage")
+                            .resizable()  // Делаем изображение масштабируемым
+                            .scaledToFit()  // Подгоняем изображение по размеру контейнера
+                            .frame(width: 400)  // Устанавливаем размеры
+                            .padding(.top, 50.0)
+                        VStack {
+                            Image("Logo_full_long")
+                                .resizable()  // Делаем изображение масштабируемым
+                                .scaledToFit()  // Подгоняем изображение по размеру контейнера
+                                .frame(width: 70)  // Устанавливаем размеры
+                                .padding(.top, 100)
+                            Text("Лучшие подкасты только у нас!")
+                                .customTextStyle(.double)
+                                .kerning(1.0)
+                                .foregroundColor(Color(.mainLight))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(nil)
+                                .padding(.top, 10.0)
+                                .frame(width: 290)
+                            Text("У нас собрана лучшая коллекция подкастов на любой вкус, собранная исходя из отзывов и мнений реальных слушателей")
+                                .customTextStyle(.h3)
+                                .foregroundColor(Color(.mainLight))
+                                .multilineTextAlignment(.center)
+                                .padding(.top, 10.0)
+                                .frame(width: 280)
+                            Button(action: {
+                                // логика перехода или любое другое действие
+                            }) {
+                                Text("К поиску")
+                                    .customTextStyle(.h4)
+                                    .foregroundColor(Color(.mainLight5))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 24)
+                                    .background(Color(.mainGreen))
+                                    .cornerRadius(8)
+                            }
+                            
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 20)
+                            .frame(width: 180)
+                        }}
                     Text("Что конкретно вы ищите?")
                         .customTextStyle(.h4)
                         .foregroundColor(Color(.mainLight))
@@ -151,6 +188,7 @@ struct MainView: View {
                         .padding([.leading, .trailing], 0)  // Убираем отступы по горизонтали у LazyVGrid
                     }
                     .padding(.horizontal)
+                    .padding(.top, 30.0)
                     VStack {
                         // Заголовок с названием свежего выпуска подкаста
                         Text("Свежий выпуск подкаста: \(newissue?.name ?? "Подкаст не найден")")
@@ -171,6 +209,7 @@ struct MainView: View {
                         }
                     }
                     .padding()  // Общий отступ для всего VStack
+                    .padding(.top, 30.0)
                     VStack {
                         Text("Чарт выпусков")
                             .customTextStyle(.h1)
@@ -180,28 +219,78 @@ struct MainView: View {
                             .padding(.bottom, 20)  // Отступ снизу для заголовка
                             .frame(maxWidth: .infinity, alignment: .leading)
                         LazyVStack(alignment: .leading, spacing: 16) {
-                            ForEach(chartissues) { issue in
-                                ForEach(0..<3, id: \.self) { index in
-                                    HStack(alignment: .center) {
-                                        Text("\(index + 1).")
-                                            .font(.headline)
-                                            .foregroundColor(Color("MainLight"))
-                                            .frame(width: 20, alignment: .leading) // чтобы цифры были ровно в ряд
-                                        IssueChartCard(issue: chartissues[index])
-                                    }
+                            ForEach(0..<min(3, chartissues.count), id: \.self) { index in
+                                HStack(alignment: .center) {
+                                    Text("\(index + 1).")
+                                        .font(.headline)
+                                        .foregroundColor(Color("MainLight"))
+                                        .frame(width: 20, alignment: .leading)
+                                    IssueChartCard(issue: chartissues[index])
                                 }
-                                
                             }
                         }
                     }
-                    .padding() 
+                    .padding()
+                    .padding(.top, 30.0)
+                    if !themes.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Тематики")
+                                .customTextStyle(.h1)
+                                .foregroundColor(Color(.mainLight))
+                                .multilineTextAlignment(.leading)
+                                .padding(.trailing, 100.0)
+                                .padding(.bottom, 20)  // Отступ снизу для заголовка
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            LazyVGrid(columns: [
+                                GridItem(.flexible(), spacing: 16),
+                                GridItem(.flexible(), spacing: 16)
+                            ], spacing: 16) {
+                                ForEach(themes.prefix(4)) { theme in
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        if let imageURL = URL(string: "http://localhost:3000" + theme.coverUrl) {
+                                            ZStack {
+                                                Color.gray // Фон-заглушка или цвет по умолчанию
+
+                                                AsyncImage(url: URL(string: "http://localhost:3000" + theme.coverUrl)) { image in
+                                                    image
+                                                        .resizable()
+                                                        .scaledToFill()
+                                                        .padding(.trailing, 230) // Отступ внутрь от правого края
+                                                } placeholder: {
+                                                    Color.gray
+                                                }
+                                            }
+                                            .frame(width: 170, height: 170)
+                                            .clipped()
+                                            .cornerRadius(8)
+                                        } else {
+                                            Color.gray
+                                                .frame(width: 100, height: 100)
+                                                .cornerRadius(8)
+                                        }
+                                        
+                                        Text(theme.name)
+                                            .customTextStyle(.h4)
+                                            .foregroundColor(Color(.mainLight))
+                                            .multilineTextAlignment(.leading)
+                                            .frame(width: 170)
+                                    }
+                                }
+                            }
+                            .padding([.leading, .trailing], 0)
+                        }
+                        .padding()
+                    }
                 }
                 
             }
             .background(Color(.background))
+            
             .onAppear {
                 PodcastService.shared.fetchPodcasts { podcasts in
                     if let podcasts = podcasts {
+                        print("Получено подкастов: \(podcasts.count)")
                         DispatchQueue.main.async {
                             self.podcasts = podcasts }}}
                 IssueAllService.shared.fetchIssues { issues in
@@ -214,6 +303,13 @@ struct MainView: View {
                         print("Ошибка: не удалось получить выпуски")
                     }
                 }
+                ThemeService.shared.fetchThemes { fetchedThemes in
+                        if let fetchedThemes = fetchedThemes {
+                            DispatchQueue.main.async {
+                                self.themes = fetchedThemes
+                            }
+                        }
+                    }
             }
         }
     }

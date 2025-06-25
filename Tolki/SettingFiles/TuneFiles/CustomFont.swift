@@ -15,6 +15,7 @@ enum TextStyle {
     case h3Button
     case h4
     case text
+    case double
 
     var fontName: String {
         switch self {
@@ -27,6 +28,7 @@ enum TextStyle {
 
     var size: CGFloat {
         switch self {
+        case .double: return 44
         case .display: return 32
         case .h1: return 24
         case .h2: return 20
@@ -37,6 +39,7 @@ enum TextStyle {
 
     var letterSpacing: CGFloat {
         switch self {
+        case .double: return 0.7
         case .h1, .display: return 0.72
         case .h2: return 0.6
         case .h3Button, .h3: return 0.48
@@ -46,6 +49,7 @@ enum TextStyle {
 
     var lineHeight: CGFloat? {
         switch self {
+        case .double: return 44
         case .h1, .display: return 26.4
         case .h2: return 22.0
         case .h4, .text: return 13.2

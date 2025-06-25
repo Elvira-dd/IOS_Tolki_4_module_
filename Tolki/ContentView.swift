@@ -5,40 +5,36 @@
 //  Created by Эльвира on 26.02.2025.
 //
 
-
 import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var viewModel: ViewModel
-    @State var password_confirmation: String = ""
     @State var email: String = ""
     @State var password: String = ""
     @State private var showPassword: Bool = false
     
     init(viewModel: ViewModel) {
         self.viewModel = viewModel
-        
-        
     }
-
+    
     var body: some View {
-        VStack {
+        NavigationView {
             if viewModel.gotToken {
                 MainTabView()
             } else {
                 ZStack {
                     Color(.background)
                         .edgesIgnoringSafeArea(.all)
+                    
                     VStack {
                         Text("С возвращением!")
-                            
                             .customTextStyle(.h1)
                             .foregroundColor(Color(.mainLight))
-                            .padding(.bottom, 6.0)
-                        Text("Чтобы учавствовать в обсуждениях, оставлять отзывы, тебе нужно войти в аккаунт!")
+                            .padding(.bottom, 6)
+                        
+                        Text("Чтобы участвовать в обсуждениях, оставлять отзывы, тебе нужно войти в аккаунт!")
                             .multilineTextAlignment(.center)
-                         
-                            .frame(width: 350.0)
+                            .frame(width: 350)
                             .customTextStyle(.text)
                             .foregroundColor(Color(.mainLight2))
                         
@@ -50,7 +46,6 @@ struct ContentView: View {
                                     .padding(.horizontal, 24)
                                     .padding(.vertical, 16)
                             }
-
                             TextField("", text: $email)
                                 .customTextStyle(.h3)
                                 .foregroundColor(Color(.mainLight5))
@@ -71,7 +66,6 @@ struct ContentView: View {
                                     .padding(.horizontal, 24)
                                     .padding(.vertical, 16)
                             }
-
                             HStack {
                                 if showPassword {
                                     TextField("", text: $password)
@@ -84,7 +78,7 @@ struct ContentView: View {
                                         .foregroundColor(Color(.mainLight5))
                                         .autocapitalization(.none)
                                 }
-
+                                
                                 Button(action: {
                                     showPassword.toggle()
                                 }) {
@@ -112,7 +106,7 @@ struct ContentView: View {
                                 .cornerRadius(8)
                         }
                         .padding()
-
+                        
                         VStack(spacing: 4) {
                             Text("Упс! Если вас ещё нет на нашем сервисе, срочно")
                                 .foregroundColor(Color(.mainLight2))
@@ -129,11 +123,14 @@ struct ContentView: View {
                         .padding(.top, 20)
                     }
                 }
+                
             }
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarHidden(true)
     }
+    
 }
+
 
 struct RegView: View {
     @ObservedObject var viewModel: ViewModel
@@ -141,31 +138,29 @@ struct RegView: View {
     @State var email: String = ""
     @State var password: String = ""
     @State private var showPassword: Bool = false
-
+    
     var body: some View {
-        VStack {
+        NavigationView {
             if viewModel.gotToken {
                 MainTabView()
             } else {
                 ZStack {
                     Color(.background)
                         .edgesIgnoringSafeArea(.all)
+                    
                     VStack {
                         Text("Приветствуем!")
-                            
                             .customTextStyle(.h1)
                             .foregroundColor(Color(.mainLight))
-                            .padding(.bottom, 6.0)
-                        Text("Чтобы учавствовать в обсуждениях, оставлять отзывы, тебе нужно зарегистрироваться!")
+                            .padding(.bottom, 6)
+                        
+                        Text("Чтобы участвовать в обсуждениях, оставлять отзывы, тебе нужно зарегистрироваться!")
                             .multilineTextAlignment(.center)
-                         
-                            .padding(.bottom, 32.0)
-                            .frame(width: 350.0)
+                            .padding(.bottom, 32)
+                            .frame(width: 350)
                             .customTextStyle(.text)
                             .foregroundColor(Color(.mainLight2))
                         
-                        
-
                         ZStack(alignment: .leading) {
                             if email.isEmpty {
                                 Text("Email")
@@ -174,7 +169,6 @@ struct RegView: View {
                                     .padding(.vertical, 16)
                                     .padding(.horizontal, 24)
                             }
-
                             TextField("", text: $email)
                                 .customTextStyle(.h3)
                                 .foregroundColor(Color(.mainLight5))
@@ -185,7 +179,7 @@ struct RegView: View {
                         .cornerRadius(8)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 16)
-
+                        
                         ZStack(alignment: .leading) {
                             if password.isEmpty {
                                 Text("Пароль")
@@ -194,7 +188,6 @@ struct RegView: View {
                                     .padding(.vertical, 16)
                                     .padding(.horizontal, 24)
                             }
-
                             HStack {
                                 if showPassword {
                                     TextField("", text: $password)
@@ -205,7 +198,7 @@ struct RegView: View {
                                         .customTextStyle(.h3)
                                         .foregroundColor(Color(.mainLight5))
                                 }
-
+                                
                                 Button(action: {
                                     showPassword.toggle()
                                 }) {
@@ -220,7 +213,7 @@ struct RegView: View {
                         .cornerRadius(8)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 16)
-
+                        
                         ZStack(alignment: .leading) {
                             if password_confirmation.isEmpty {
                                 Text("Подтвердите пароль")
@@ -229,7 +222,6 @@ struct RegView: View {
                                     .padding(.vertical, 16)
                                     .padding(.horizontal, 24)
                             }
-
                             HStack {
                                 if showPassword {
                                     TextField("", text: $password_confirmation)
@@ -240,7 +232,7 @@ struct RegView: View {
                                         .customTextStyle(.h3)
                                         .foregroundColor(Color(.mainLight5))
                                 }
-
+                                
                                 Button(action: {
                                     showPassword.toggle()
                                 }) {
@@ -255,7 +247,7 @@ struct RegView: View {
                         .cornerRadius(8)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 24)
-
+                        
                         Button(action: {
                             viewModel.signUp(email: email, password: password, passwordConfirmation: password_confirmation)
                         }) {
@@ -270,13 +262,14 @@ struct RegView: View {
                         }
                         .padding(.horizontal, 24)
                         .padding(.bottom, 20)
+                        
                         VStack(spacing: 4) {
                             Text("Если у тебя уже есть аккаунт, не стесняйся —")
                                 .foregroundColor(Color(.mainLight2))
                                 .customTextStyle(.text)
                                 .multilineTextAlignment(.center)
                             
-                            NavigationLink(destination:  ContentView(viewModel: viewModel)) {
+                            NavigationLink(destination: ContentView(viewModel: viewModel)) {
                                 Text("заходи!")
                                     .foregroundColor(Color(.mainLight2))
                                     .underline()
@@ -284,17 +277,14 @@ struct RegView: View {
                             }
                         }
                         .padding(.top, 20)
-                        
                     }
                 }
+                
             }
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarHidden(true)
     }
 }
-
-
-
 
 #Preview {
     RegView(viewModel: ViewModel())

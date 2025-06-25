@@ -7,18 +7,6 @@
 
 import Foundation
 
-struct ThemeTag: Codable, Identifiable, Hashable {
-    let id: Int
-    let name: String
-    let description: String
-    let cover: String
-    let createdAt: String
-
-    enum CodingKeys: String, CodingKey {
-        case id, name, description, cover
-        case createdAt = "created_at"
-    }
-}
 
 
 
@@ -33,7 +21,7 @@ struct Podcast: Identifiable, Codable {
     var issue: [Issue]
     var posts: [Post]
     var authors: [Author]
-    var themes: [Theme]
+    var themes: [ThemeInPodcast]
     
     // Указываем, как ключи из JSON соответствуют нашим свойствам
     enum CodingKeys: String, CodingKey {
@@ -136,12 +124,19 @@ struct Comment: Identifiable, Codable {
 }
 
 struct Theme: Identifiable, Codable {
-    var id: Int?
-    var name: String
-    
+    let id: Int
+    let name: String
+    let description: String
+    let url: String
+    let coverUrl: String
+}
+
+struct ThemeInPodcast: Identifiable, Codable {
+    let id: Int
+    let name: String
+
     enum CodingKeys: String, CodingKey {
-        case id
-        case name
+        case id, name
     }
 }
 

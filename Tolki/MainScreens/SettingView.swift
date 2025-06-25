@@ -39,7 +39,6 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(.systemBackground)) // Используем стандартный цвет фона
         }
-        .navigationBarBackButtonHidden(true)
     }
 }
 

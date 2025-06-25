@@ -287,27 +287,46 @@ class CommentService {
    
 }
 
-class ThemeFetcher: ObservableObject {
-    @Published var themes: [ThemeTag] = []
+class ThemeService {
+    static let shared = ThemeService()
+    private let baseURL = "http://localhost:3000"
 
-    func fetchThemes() {
-        guard let url = URL(string: "http://localhost:3000/api/v1/themes") else { return }
-        
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let data = data {
-                do {
-                    let decoder = JSONDecoder()
-                    decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    let fetchedThemes = try decoder.decode([ThemeTag].self, from: data)
-                    
-                    DispatchQueue.main.async {
-                        self.themes = fetchedThemes
-                    }
-                } catch {
-                    print("Ошибка декодирования тем: \(error)")
+    func fetchThemes(completion: @escaping ([Theme]?) -> Void) {
+        guard let url = URL(string: "http://localhost:3000/api/v1/themes") else {
+            print("❌ Ошибка: неверный URL для получения тематик")
+            completion(nil)
+            return
+        }
+
+        let request = URLRequest(url: url)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Ошибка сети при загрузке тематик: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+
+            guard let data = data else {
+                print("❌ Нет данных в ответе")
+                completion(nil)
+                return
+            }
+
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("✅ Ответ сервера по тематикам: \(jsonString)")
+            }
+
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let themes = try decoder.decode([Theme].self, from: data)
+                DispatchQueue.main.async {
+                    completion(themes)
                 }
-            } else if let error = error {
-                print("Ошибка сети (темы): \(error)")
+            } catch {
+                print("❌ Ошибка декодирования тематик: \(error)")
+                completion(nil)
             }
         }.resume()
     }
