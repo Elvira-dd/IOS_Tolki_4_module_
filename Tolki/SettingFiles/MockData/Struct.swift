@@ -225,18 +225,6 @@ struct Profile: Codable {
         case avatarURL = "avatar_url"
     }
 }
-struct ProfileResponse: Codable {
-    let id: Int
-    let email: String
-    let profile: Profile
-    let author: Author?
-    let isAuthor: Bool
-
-    enum CodingKeys: String, CodingKey {
-        case id, email, profile, author
-        case isAuthor = "is_author"
-    }
-}
 
 struct UserResponse: Codable {
     let isSuccess: Bool
@@ -260,4 +248,9 @@ struct User: Codable, Identifiable {
         case avatarURL = "avatar_url"
         case isAuthor = "is_author"
     }
+}
+struct EditableProfile: Codable {
+    var name: String
+    var bio: String
+    var level: String
 }

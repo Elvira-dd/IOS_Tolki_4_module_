@@ -560,4 +560,3 @@ class FavoriteService {
     }
 }
 
-// Модель ответа от сервера
